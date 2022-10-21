@@ -16365,11 +16365,24 @@ button.md-toast-close-button {
     position: relative;
     width: 110px;
     height: 110px;
-    margin-top: 50px;
-    margin-bottom: 50px;
+
     text-align: center
 }
 
+.btnCardChange {
+    /* background: linear-gradient(270deg, #EC7750 0%, #EA3F2A 100%) !important; */
+    background-color: #212121;
+    color: white;
+    width: 97%;
+    border-radius: 7px;
+}
+
+.btnCardKids {
+    background-color: #212121;
+    color: white;
+    width: 47%;
+    border-radius: 7px;
+}
 .min-chart canvas {
     position: absolute;
     top: 0;

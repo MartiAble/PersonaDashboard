@@ -123,9 +123,7 @@ class SFasad extends BaseController
 		$html = curl_exec($ch);
 		
 		$data=json_decode($html,true);
-		
-		
-		
+
 		return $data['Parameters']['Result'];
 		
 	}

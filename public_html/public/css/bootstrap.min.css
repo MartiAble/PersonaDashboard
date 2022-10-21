@@ -229,9 +229,21 @@ img {
     border-style: none
 }
 
-svg {
+.sunburst-viz svg {
     overflow: hidden;
-    vertical-align: middle
+    vertical-align: middle;
+    position: static !important;
+    width: 700px !important;
+    height: 700px !important;
+}
+
+.sunburst-viz text {
+    font-family: sans-serif;
+    font-size: 28px !important;
+    dominant-baseline: middle;
+    text-anchor: middle;
+    pointer-events: none;
+    fill: #222;
 }
 
 table {

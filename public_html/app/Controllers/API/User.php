@@ -18,14 +18,74 @@ class User extends BaseController
 
 	    $User = $this->session->get('user');
 	    $monthArr = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-	    $currentmoth = date('m')-1;
+        $monthArrShort = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+        $currentmoth = date('m')-1;
 	    $month = [];
 	    for($i=0; $i<$currentmoth; $i++){
 		    array_push($month,$monthArr[$i]);
 	    }
+        $monthShort = [];
+        for($i=0; $i<$currentmoth; $i++){
+            array_push($monthShort,$monthArrShort[$i]);
+        }
 
-	    $current = SFasad::getReport('338e05a4-bfa0-11ec-80da-3497f65a1648'/*$user['user_s_id']*/,$start,$end,'GetPlanFakt');
-		$appg = SFasad::getReport('338e05a4-bfa0-11ec-80da-3497f65a1648'/*$user['user_s_id']*/,date('01.m.Y',strtotime($start.'-1 Year')),date('d.m.Y',strtotime($end.'-1 Year')),'GetPlanFakt');
+        /* CURRENT */
+
+        $current = SFasad::getReport('338e05a4-bfa0-11ec-80da-3497f65a1648'/*$user['user_s_id']*/,$start,$end,'GetPlanFakt');
+
+
+
+        $currentDay = date('d', strtotime($end));
+
+        $kids = [];
+        foreach ($current as $obj) {
+            $keys = array_keys($obj);
+            if(isset($obj['KidsFact'])){
+                array_push($kids,['Club'=>$obj['Club'],'CurrentPlan'=>$obj['KidsPlan'],'TotalPlan'=>$obj['KidsPlan'],'SummFact'=>$obj['KidsFact'],'Percent'=>round(($obj['KidsFact']/($obj['KidsPlan']/100)),0)]);
+            }
+        }
+
+        $kidsOver['Club']='Kids';
+        $kidsOver['CurrentPlan']=0;
+        $kidsOver['TotalPlan']=0;
+        $kidsOver['SummFact']=0;
+        $kidsOver['Percent']=0;
+        foreach ($kids as $el){
+            $kidsOver['CurrentPlan'] = round($kidsOver['CurrentPlan']+$el['CurrentPlan'] / 30 * $currentDay);
+            $kidsOver['TotalPlan'] = $kidsOver['TotalPlan']+$el['TotalPlan'];
+            $kidsOver['SummFact'] = $kidsOver['SummFact']+$el['SummFact'];
+        }
+        if(isset($obj['TotalPlan'])) {
+            $kidsOver['Percent'] = round($kidsOver['SummFact'] / ($kidsOver['CurrentPlan'] / 100), 0);
+        }
+        $current[]=$kidsOver;
+
+        /* APPG */
+
+        $appg = SFasad::getReport('338e05a4-bfa0-11ec-80da-3497f65a1648'/*$user['user_s_id']*/,date('01.m.Y',strtotime($start.'-1 Year')),date('d.m.Y',strtotime($end.'-1 Year')),'GetPlanFakt');
+
+        $kidsAppg = [];
+        foreach ($appg as $obj) {
+            $keys = array_keys($obj);
+            if(isset($obj['KidsFact' > 0])){
+                array_push($kidsAppg,['Club'=>$obj['Club'],'CurrentPlan'=>$obj['KidsPlan'],'TotalPlan'=>$obj['KidsPlan'],'SummFact'=>$obj['KidsFact'],'Percent'=>round(($obj['KidsFact']/($obj['KidsPlan']/100)),0)]);
+            }
+        }
+
+        $kidsOver['Club']='KIDS';
+        $kidsOver['CurrentPlan']=0;
+        $kidsOver['TotalPlan']=0;
+        $kidsOver['SummFact']=0;
+        $kidsOver['Percent']=0;
+        foreach ($kidsAppg as $el){
+            $kidsOver['CurrentPlan'] = $kidsOver['CurrentPlan']+$el['CurrentPlan'];
+            $kidsOver['TotalPlan'] = $kidsOver['TotalPlan']+$el['TotalPlan'];
+            $kidsOver['SummFact'] = $kidsOver['SummFact']+$el['SummFact'];
+        }
+        if(isset($obj['KidsFact' > 0])){
+            array_push($kidsOver,['Percent'=>round(($obj['KidsFact']/($obj['KidsPlan']/100)),0)]);
+        }
+        $appg[]=$kidsOver;
 
        /* for($i = 0,$iMax=count($current); $i<$iMax; $i++){
 			$current[$i]['TotalPlan'] = number_format($current[$i]['TotalPlan'],0,'.',' ');
@@ -41,13 +101,17 @@ class User extends BaseController
 			'current'=>$current,
 			'appg'=>$appg,
 	        ],
+            'kids'=>[$kids,$kidsAppg],
+            'kidsOther'=>$kids,
+            'monthShort'=>$monthShort,
 			'month'=>$month,
 			'start'=>date('Y-m-d',strtotime($start)),
 			'end'=>date('Y-m-d',strtotime($end)),
 			'startSTR'=>date('d.m.Y',strtotime($start)),
-			'endSTR'=>date('d.m.Y',strtotime($end))
+			'endSTR'=>date('d.m.Y',strtotime($end)),
 		]);
     }
+
 
 	public function getInfo(){
 		$start = $this->request->getVar('start');
@@ -55,7 +119,7 @@ class User extends BaseController
 		$user = $this->session->get('user');
 		$startM= date('m',strtotime($start));
 		$endM = date('m',strtotime($end));
-		$current = SFasad::getReport('338e05a4-bfa0-11ec-80da-3497f65a1648'/*$user['user_s_id']*/,date('d.m.Y',strtotime($start)),date('d.m.Y',strtotime($end)),'GetPlanFakt');
+ 		$current = SFasad::getReport('338e05a4-bfa0-11ec-80da-3497f65a1648'/*$user['user_s_id']*/,date('d.m.Y',strtotime($start)),date('d.m.Y',strtotime($end)),'GetPlanFakt');
 		sllep(2);
 		$appg = SFasad::getReport('338e05a4-bfa0-11ec-80da-3497f65a1648'/*$user['user_s_id']*/,date('d.m.Y',strtotime($start.'- 1 Year')),date('d.m.Y',strtotime($end.'-1 Year')),'GetPlanFakt');
 
@@ -72,7 +136,8 @@ class User extends BaseController
 		return $this->respond(['content'=>
 			[
 				'current'=>$current,
-				'appg'=>$appg
+				'appg'=>$appg,
+
 			],
 			'start'=>date('d.m.Y',strtotime($start)),
 			'end'=>date('d.m.Y',strtotime($end))
